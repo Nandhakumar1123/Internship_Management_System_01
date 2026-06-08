@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Profile</title>
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif;}
+body {background: linear-gradient(135deg,#f0f4f8,#d9e2ec); color:#333;}
+header {background: linear-gradient(135deg,#4e73df,#1cc88a); color:white; padding:20px; text-align:center;}
+header h1 {font-size:2em;}
+.container {max-width:600px; margin:40px auto; padding:30px; background:white; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1);}
+.profile-info {margin-bottom:20px;}
+.profile-info p {font-size:18px; margin:10px 0;}
+button {padding:10px 20px; border:none; border-radius:12px; cursor:pointer; background:#4e73df; color:white; font-weight:bold; margin-top:20px;}
+button:hover {background:#2e59d9;}
+footer {background:#4e73df; color:white; text-align:center; padding:20px; margin-top:40px; border-top-left-radius:20px; border-top-right-radius:20px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>My Profile</h1>
+</header>
+
+<div class="container">
+  <div class="profile-info">
+    <p><strong>Name:</strong> <span id="name"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+    <p><strong>Mobile:</strong> <span id="mobile"></span></p>
+    <p><strong>Skills:</strong> <span id="skills"></span></p>
+  </div>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<footer>
+  &copy; 2025 Internship Portal | Designed by Your Institute
+</footer>
+
+<script>
+// Load student info from localStorage
+const student = JSON.parse(localStorage.getItem('currentUser')) || {};
+document.getElementById('name').innerText = student.name || '-';
+document.getElementById('email').innerText = student.email || '-';
+document.getElementById('mobile').innerText = student.mobile || '-';
+document.getElementById('skills').innerText = student.skills || '-';
+
+// Logout function
+function logout(){
+  localStorage.removeItem('currentUser'); // remove current user
+  window.location.href = '/login';     // redirect to login page
+}
+</script>
+
+</body>
+</html>

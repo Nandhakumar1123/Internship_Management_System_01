@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Available Internships</title>
+<style>
+* {margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif;}
+body {background: linear-gradient(135deg, #f0f4f8, #d9e2ec); color: #333;}
+header {background: linear-gradient(135deg,#4e73df,#1cc88a); color: white; padding: 20px 40px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 100;}
+header h1 {font-size: 2em; letter-spacing: 1px;}
+.container {max-width: 1000px; margin: 40px auto; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);}
+table {width: 100%; border-collapse: collapse; margin-top: 20px;}
+th, td {border: 1px solid #ccc; padding: 12px; text-align: left;}
+th {background: linear-gradient(135deg,#4e73df,#1cc88a); color: white;}
+td {background: #f8f9fc; transition: background 0.3s;}
+tr:hover td {background: #e0e7ff;}
+button {padding: 8px 15px; border: none; border-radius: 8px; cursor: pointer; background: linear-gradient(45deg,#1cc88a,#4e73df); color: white; font-weight: bold; transition: all 0.3s ease;}
+button:hover {background: linear-gradient(45deg,#4e73df,#1cc88a); transform: scale(1.05);}
+button:disabled {background: #ccc; cursor: not-allowed;}
+.loading {text-align: center; padding: 20px;}
+.error {color: red; text-align: center; padding: 20px;}
+footer {background: #4e73df; color: white; text-align: center; padding: 20px; margin-top: 40px; font-size: 0.9em; border-top-left-radius: 20px; border-top-right-radius: 20px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Available Internships</h1>
+</header>
+
+<div class="container">
+  <div id="loadingMessage" class="loading">Loading internships...</div>
+  <div id="errorMessage" class="error" style="display:none;"></div>
+  <table id="internshipTable" style="display:none;">
+    <tr><th>Company</th><th>Title</th><th>Skills</th><th>Stipend</th><th>Action</th></tr>
+  </table>
+  <button onclick="location.href='/student_dashboard'">← Back to Dashboard</button>
+</div>
+
+<footer>
+  &copy; 2025 Internship Portal | Designed by Your Institute
+</footer>
+
+<script>
+let currentUser = null;
+
+function checkAuth() {
+  currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (!currentUser || currentUser.role !== 'student') {
+    window.location.href = '/login';
+    return false;
+  }
+  return true;
+}
+
+async function loadInternships() {
+  try {
+    const response = await fetch('/api/internships');
+    const data = await response.json();
+    
+    if (data.success) {
+      displayInternships(data.internships);
+    } else {
+      showError('Failed to load internships');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showError('Error loading internships');
+  }
+}
+
+async function checkIfApplied(internshipId) {
+  try {
+    const response = await fetch(`/api/applications/${currentUser.user_id}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      return data.applications.some(app => app.internship_id === internshipId);
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function displayInternships(internships) {
+  document.getElementById('loadingMessage').style.display = 'none';
+  const table = document.getElementById('internshipTable');
+  table.style.display = 'table';
+  
+  for (const internship of internships) {
+    const row = table.insertRow();
+    row.insertCell(0).innerText = internship.company_name;
+    row.insertCell(1).innerText = internship.title;
+    row.insertCell(2).innerText = internship.skills_required;
+    row.insertCell(3).innerText = internship.stipend || 'Not specified';
+    
+    const btn = document.createElement('button');
+    const alreadyApplied = await checkIfApplied(internship.internship_id);
+    
+    if (alreadyApplied) {
+      btn.innerText = 'Already Applied';
+      btn.disabled = true;
+    } else {
+      btn.innerText = 'Apply';
+      btn.onclick = () => applyForInternship(internship.internship_id, internship.title);
+    }
+    
+    row.insertCell(4).appendChild(btn);
+  }
+}
+
+async function applyForInternship(internshipId, title) {
+  if (confirm(`Apply for ${title}?`)) {
+    window.location.href = `/apply?internship_id=${internshipId}`;
+  }
+}
+
+function showError(message) {
+  document.getElementById('loadingMessage').style.display = 'none';
+  document.getElementById('errorMessage').textContent = message;
+  document.getElementById('errorMessage').style.display = 'block';
+}
+
+if (checkAuth()) {
+  loadInternships();
+}
+</script>
+
+</body>
+</html>

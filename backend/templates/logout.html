@@ -1,0 +1,48 @@
+<!-- templates/logout.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logging Out...</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#f0f4f8,#d9e2ec);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: #333;
+}
+.container {
+  background: white;
+  padding: 30px 50px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Logging you out...</h2>
+  <p>Please wait!</p>
+</div>
+
+<script>
+// Clear current session
+localStorage.removeItem('currentUser');
+
+// Optional: clear all applied data if needed
+// localStorage.removeItem('applied');
+
+// Redirect to login page after 2 seconds
+setTimeout(()=>{
+  window.location.href = 'login.html';
+}, 2000);
+</script>
+
+</body>
+</html>

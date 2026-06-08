@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post Internship</title>
+<style>
+* {margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif;}
+body {background: linear-gradient(135deg, #f0f4f8, #d9e2ec); color: #333;}
+header {background: linear-gradient(135deg,#4e73df,#1cc88a); color: white; padding: 20px 40px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+header h1 {font-size: 2em;}
+.container {max-width: 700px; margin: 40px auto; background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);}
+form label {display: block; margin-top: 15px; font-weight: bold; color: #4e73df;}
+input, textarea {width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px;}
+input[type="submit"] {background: linear-gradient(45deg,#4e73df,#1cc88a); color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 20px;}
+input[type="submit"]:hover {background: linear-gradient(45deg,#1cc88a,#4e73df); transform: scale(1.05);}
+button {margin-top: 20px; padding: 12px 25px; border: none; border-radius: 12px; background: linear-gradient(45deg,#4e73df,#1cc88a); color: white; font-weight: bold; cursor: pointer;}
+.error {color:red; text-align:center; padding:10px;}
+.success {color:green; text-align:center; padding:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Post New Internship</h1>
+</header>
+
+<div class="container">
+  <form id="postForm">
+    <label>Internship Title</label>
+    <input type="text" id="title" placeholder="e.g., Web Developer Intern" required>
+    
+    <label>Skills Required</label>
+    <input type="text" id="skills" placeholder="HTML, CSS, JavaScript" required>
+    
+    <label>Stipend</label>
+    <input type="text" id="stipend" placeholder="e.g., 5000 per month">
+    
+    <label>Description</label>
+    <textarea id="description" rows="4" placeholder="Describe the internship role and responsibilities"></textarea>
+    
+    <input type="submit" value="Post Internship">
+  </form>
+
+  <div id="errorMessage" class="error" style="display:none;"></div>
+  <div id="successMessage" class="success" style="display:none;"></div>
+
+  <button onclick="location.href='/company_dashboard'">← Back to Dashboard</button>
+</div>
+
+<script>
+let currentUser = null;
+
+function checkAuth() {
+  currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (!currentUser || currentUser.role !== 'company') {
+    window.location.href = '/login';
+    return false;
+  }
+  return true;
+}
+
+document.getElementById('postForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const internship = {
+    company_id: currentUser.user_id,
+    title: document.getElementById('title').value,
+    skills_required: document.getElementById('skills').value,
+    stipend: document.getElementById('stipend').value,
+    description: document.getElementById('description').value
+  };
+
+  try {
+    const response = await fetch('/api/internships', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(internship)
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      document.getElementById('successMessage').textContent = 'Internship posted successfully!';
+      document.getElementById('successMessage').style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+      document.getElementById('postForm').reset();
+      
+      setTimeout(() => {
+        window.location.href = '/company_view_internships';
+      }, 2000);
+    } else {
+      throw new Error('Failed to post internship');
+    }
+  } catch (error) {
+    document.getElementById('errorMessage').textContent = error.message;
+    document.getElementById('errorMessage').style.display = 'block';
+    document.getElementById('successMessage').style.display = 'none';
+  }
+});
+
+if (checkAuth()) {
+  // Page loaded
+}
+</script>
+
+</body>
+</html>

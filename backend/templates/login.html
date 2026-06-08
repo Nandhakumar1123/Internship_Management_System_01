@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Internship Portal</title>
+<style>
+body {font-family: Arial, sans-serif; background:#f4f6f9; margin:0;}
+header {background: linear-gradient(135deg, #4e73df, #1cc88a); color:white; text-align:center; padding:20px;}
+.container {max-width:400px; margin:50px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+h2 {color:#4e73df; text-align:center;}
+input, select {width:100%; padding:10px; margin:5px 0 15px 0; border:1px solid #ccc; border-radius:5px; box-sizing:border-box;}
+input[type="submit"] {background:#4e73df; color:white; border:none; border-radius:30px; cursor:pointer; padding:10px; font-size:1rem;}
+input[type="submit"]:hover {background:#2e59d9;}
+.error {color:red; text-align:center; margin-top:10px;}
+.back {text-align:center; margin-top:10px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Internship Management Portal</h1>
+</header>
+<div class="container">
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label>Email</label>
+    <input type="email" id="email" required>
+
+    <label>Password</label>
+    <input type="password" id="password" required>
+
+    <label>Role</label>
+    <select id="role" required>
+      <option value="">--Select Role--</option>
+      <option value="student">Student</option>
+      <option value="company">HR / Company</option>
+    </select>
+
+    <input type="submit" value="Login">
+  </form>
+  <p class="error" id="errorMsg"></p>
+  <p class="back"><a href="/register">Don't have an account? Register</a></p>
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const role = document.getElementById('role').value;
+  
+  const formData = new FormData();
+  formData.append('email', email);
+  formData.append('password', password);
+  formData.append('role', role);
+  
+  try {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      
+      if(role === 'student') {
+        window.location.href = '/student_dashboard';
+      } else if(role === 'company') {
+        window.location.href = '/company_dashboard';
+      }
+    } else {
+      document.getElementById('errorMsg').innerText = data.detail || 'Login failed';
+    }
+  } catch(error) {
+    document.getElementById('errorMsg').innerText = 'Login failed. Please try again.';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Internship Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(135deg, #4e73df, #1cc88a);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .container {
+      max-width: 500px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #4e73df;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    input[type="submit"] {
+      background: #1cc88a;
+      color: white;
+      border: none;
+      margin-top: 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 30px;
+    }
+    input[type="submit"]:hover {
+      background: #17a673;
+    }
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #4e73df;
+    }
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      color: green;
+    }
+    .error {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Internship Management System</h1>
+  </header>
+  <div class="container">
+    <h2>New User Registration</h2>
+    <form id="registerForm">
+      <label>Name</label>
+      <input type="text" name="name" required>
+
+      <label>Email</label>
+      <input type="email" name="email" required>
+
+      <label>Password</label>
+      <input type="password" name="password" required>
+
+      <label>Role</label>
+      <select name="role" required>
+        <option value="">--Select Role--</option>
+        <option value="student">Student</option>
+        <option value="company">HR / Company</option>
+      </select>
+
+      <input type="submit" value="Register">
+    </form>
+
+    <p class="message" id="successMsg"></p>
+    <p class="error" id="errorMsg"></p>
+    <a href="/index" class="back">← Back to Home</a>
+  </div>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: formData.get('name'),
+            email: formData.get('email'),
+            password: formData.get('password'),
+            role: formData.get('role')
+          }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById('successMsg').innerText = data.message;
+          document.getElementById('errorMsg').innerText = '';
+          // Redirect to login after 2 seconds
+          setTimeout(() => { window.location.href = '/login'; }, 2000);
+        } else {
+          document.getElementById('errorMsg').innerText = data.detail || 'Registration failed';
+          document.getElementById('successMsg').innerText = '';
+        }
+
+      } catch(err) {
+        document.getElementById('errorMsg').innerText = 'Error connecting to server';
+        document.getElementById('successMsg').innerText = '';
+      }
+    });
+  </script>
+</body>
+</html>

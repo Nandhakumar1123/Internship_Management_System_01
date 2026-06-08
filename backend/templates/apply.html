@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply for Internship</title>
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif;}
+body {background: linear-gradient(135deg,#f0f4f8,#d9e2ec); color:#333;}
+header {background: linear-gradient(135deg,#4e73df,#1cc88a); color:white; padding:20px; text-align:center;}
+header h1 {font-size:2em;}
+.container {max-width:700px; margin:40px auto; padding:30px; background:white; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1);}
+input, textarea {width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px;}
+input[type="submit"] {background: linear-gradient(45deg,#4e73df,#1cc88a); color:white; font-weight:bold; border:none; cursor:pointer; transition:0.3s;}
+input[type="submit"]:hover {background: linear-gradient(45deg,#1cc88a,#4e73df); transform: scale(1.05);}
+button {padding:10px 20px; border:none; border-radius:12px; cursor:pointer; background:#4e73df; color:white; font-weight:bold; margin-top:20px;}
+button:hover {background:#2e59d9;}
+.error {color:red; text-align:center; padding:10px;}
+.success {color:green; text-align:center; padding:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Apply for Internship</h1>
+</header>
+
+<div class="container">
+  <h3 id="internshipTitle">Loading...</h3>
+  
+  <form id="applyForm">
+    <label>Previous Internship / Experience</label>
+    <textarea id="experience" rows="3" placeholder="Describe any prior experience"></textarea>
+
+    <label>Knowledge / Notes</label>
+    <textarea id="knowledge" rows="3" placeholder="Any relevant knowledge"></textarea>
+
+    <label>Documents Submitted (Resume, Certificates)</label>
+    <input type="text" id="documents" placeholder="e.g., resume.pdf, cert.pdf" required>
+
+    <input type="submit" value="Submit Application">
+  </form>
+
+  <div id="errorMessage" class="error" style="display:none;"></div>
+  <div id="successMessage" class="success" style="display:none;"></div>
+
+  <button onclick="location.href='/student_view_internship'">← Back to Internships</button>
+</div>
+
+<script>
+let currentUser = null;
+let internshipId = null;
+
+function checkAuth() {
+  currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (!currentUser || currentUser.role !== 'student') {
+    window.location.href = '/login';
+    return false;
+  }
+  return true;
+}
+
+async function loadInternshipDetails() {
+  const urlParams = new URLSearchParams(window.location.search);
+  internshipId = urlParams.get('internship_id');
+  
+  if (!internshipId) {
+    window.location.href = '/student_view_internship';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/internships');
+    const data = await response.json();
+    
+    if (data.success) {
+      const internship = data.internships.find(i => i.internship_id == internshipId);
+      if (internship) {
+        document.getElementById('internshipTitle').textContent = 
+          `${internship.title} at ${internship.company_name}`;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading internship:', error);
+  }
+}
+
+document.getElementById('applyForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const application = {
+    internship_id: parseInt(internshipId),
+    student_id: currentUser.user_id,
+    experience: document.getElementById('experience').value,
+    knowledge: document.getElementById('knowledge').value,
+    documents: document.getElementById('documents').value,
+    status: 'Pending'
+  };
+
+  try {
+    const response = await fetch('/api/apply', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(application)
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      document.getElementById('successMessage').textContent = 'Application submitted successfully!';
+      document.getElementById('successMessage').style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+      
+      setTimeout(() => {
+        window.location.href = '/student_my_applications';
+      }, 2000);
+    } else {
+      throw new Error(data.detail || 'Application failed');
+    }
+  } catch (error) {
+    document.getElementById('errorMessage').textContent = error.message;
+    document.getElementById('errorMessage').style.display = 'block';
+    document.getElementById('successMessage').style.display = 'none';
+  }
+});
+
+if (checkAuth()) {
+  loadInternshipDetails();
+}
+</script>
+
+</body>
+</html>

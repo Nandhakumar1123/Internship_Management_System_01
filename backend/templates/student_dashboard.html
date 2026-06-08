@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard</title>
+<style>
+/* Reset & Basic Styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+body {
+  background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+  color: #333;
+}
+
+/* Header */
+header {
+  background: linear-gradient(135deg,#4e73df,#1cc88a);
+  color: white;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 {
+  font-size: 1.8em;
+}
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+nav a:hover {
+  color: #ffd700;
+}
+
+/* Container */
+.container {
+  max-width: 700px;
+  margin: 50px auto;
+  background: white;
+  padding: 50px 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.3s;
+}
+.container:hover {
+  transform: translateY(-5px);
+}
+
+/* Welcome Text */
+.container h2 {
+  font-size: 2em;
+  color: #4e73df;
+  margin-bottom: 30px;
+}
+
+/* Buttons */
+button {
+  padding: 15px 35px;
+  margin: 15px;
+  font-size: 18px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(45deg,#4e73df,#1cc88a);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+button:hover {
+  background: linear-gradient(45deg,#1cc88a,#4e73df);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Footer */
+footer {
+  background: #4e73df;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: 50px;
+  font-size: 0.9em;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+footer a {
+  color: #ffd700;
+  text-decoration: none;
+  margin: 0 10px;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 30px 20px;
+  }
+  button {
+    width: 80%;
+    font-size: 16px;
+  }
+  header {
+    flex-direction: column;
+    text-align: center;
+  }
+  nav {
+    margin-top: 10px;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Internship Portal</h1>
+  <nav>
+    <a href="student_dashboard.html">Dashboard</a>
+    <a href="student_profile.html">Profile</a>
+    <a href="logout.html">Logout</a>
+  </nav>
+</header>
+
+<div class="container">
+  <h2>Welcome, <span id="studentName">John Doe</span>!</h2>
+  <button onclick="location.href='/student_view_internship'">View Available Internships</button>
+    <button onclick="location.href='/apply'">Apply Intership</button>
+
+  <button onclick="location.href='/student_my_applications'">My Applications</button>
+</div>
+
+<footer>
+  &copy; 2025 Internship Portal | Designed by Your Institute | 
+  <a href="#">Contact</a> | <a href="#">Privacy Policy</a>
+</footer>
+
+<script>
+  // Example to dynamically set student name
+  const studentName = "Nandhakumar"; // Replace with actual student name dynamically
+  document.getElementById('studentName').textContent = studentName;
+</script>
+
+</body>
+</html>

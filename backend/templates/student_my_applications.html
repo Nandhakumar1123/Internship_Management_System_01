@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Applications</title>
+<style>
+/* Reset & Basic Styling */
+* {margin:0; padding:0; box-sizing:border-box; font-family: Arial, sans-serif;}
+body {background: linear-gradient(135deg,#f0f4f8,#d9e2ec); color:#333;}
+header {background: linear-gradient(135deg,#4e73df,#1cc88a); color:white; padding:20px; text-align:center;}
+header h1 {font-size:2em;}
+.container {max-width:1100px; margin:40px auto; padding:30px; background:white; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1);}
+table {width:100%; border-collapse: collapse; margin-top:20px;}
+th, td {border:1px solid #ccc; padding:12px; text-align:left;}
+th {background: linear-gradient(135deg,#4e73df,#1cc88a); color:white;}
+td {background:#f8f9fc; transition: background 0.3s;}
+tr:hover td {background:#e0e7ff;}
+.status-Pending {color: orange; font-weight:bold;}
+.status-Selected {color: green; font-weight:bold;}
+.status-Rejected {color: red; font-weight:bold;}
+.status-message {font-style: italic; padding: 5px; border-radius: 3px;}
+.status-message.selected {background-color: #e8f5e8; color: #2d5a2d;}
+.status-message.rejected {background-color: #ffe8e8; color: #5a2d2d;}
+.status-message.pending {background-color: #fff8e1; color: #8a6914;}
+button {padding:10px 20px; border:none; border-radius:12px; cursor:pointer; background:#4e73df; color:white; font-weight:bold; margin-top:20px;}
+button:hover {background:#2e59d9;}
+footer {background:#4e73df; color:white; text-align:center; padding:20px; margin-top:40px; border-top-left-radius:20px; border-top-right-radius:20px;}
+.loading {text-align:center; padding:20px;}
+.error {color:red; text-align:center; padding:20px;}
+.no-data {text-align:center; padding:40px; color:#666;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>My Applications</h1>
+</header>
+
+<div class="container">
+  <div id="loadingMessage" class="loading">Loading applications...</div>
+  <div id="errorMessage" class="error" style="display:none;"></div>
+  
+  <table id="applicationsTable" style="display:none;">
+    <tr>
+      <th>Company</th>
+      <th>Internship Title</th>
+      <th>Skills Required</th>
+      <th>Stipend</th>
+      <th>Applied Date</th>
+      <th>Status</th>
+      <th>Status Message</th>
+    </tr>
+  </table>
+  
+  <div id="noData" class="no-data" style="display:none;">
+    You haven't applied for any internships yet. <a href="/student_view_internship">Browse available internships</a>
+  </div>
+  
+  <button onclick="location.href='/student_dashboard'">← Back to Dashboard</button>
+</div>
+
+<footer>
+  &copy; 2025 Internship Portal | Designed by Your Institute
+</footer>
+
+<script>
+let currentUser = null;
+
+// Check if user is logged in as student
+function checkAuth() {
+  currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (!currentUser || currentUser.role !== 'student') {
+    window.location.href = '/login';
+    return false;
+  }
+  return true;
+}
+
+// Load student applications with detailed status
+async function loadApplications() {
+  try {
+    const response = await fetch(`/api/student/applications/status/${currentUser.user_id}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      displayApplications(data.applications);
+      showStatusAlerts(data.applications);
+    } else {
+      showError('Failed to load applications');
+    }
+  } catch (error) {
+    console.error('Error loading applications:', error);
+    showError('Error loading applications');
+  }
+}
+
+// Display applications in table
+function displayApplications(applications) {
+  const loadingMessage = document.getElementById('loadingMessage');
+  const table = document.getElementById('applicationsTable');
+  const noData = document.getElementById('noData');
+  
+  loadingMessage.style.display = 'none';
+  
+  if (applications.length === 0) {
+    noData.style.display = 'block';
+    return;
+  }
+  
+  table.style.display = 'table';
+  
+  // Clear existing rows except header
+  while (table.rows.length > 1) {
+    table.deleteRow(1);
+  }
+  
+  applications.forEach(app => {
+    const row = table.insertRow();
+    
+    // Highlight row based on status
+    if (app.status === 'Selected') {
+      row.style.backgroundColor = '#e8f5e8';
+    } else if (app.status === 'Rejected') {
+      row.style.backgroundColor = '#ffe8e8';
+    }
+    
+    row.insertCell(0).innerText = app.company_name;
+    row.insertCell(1).innerText = app.internship_title;
+    
+    // Skills + Stipend (will be loaded separately)
+    row.insertCell(2).innerText = 'Loading...';
+    row.insertCell(3).innerText = 'Loading...';
+    row.insertCell(4).innerText = new Date(app.applied_at).toLocaleDateString();
+    
+    const statusCell = row.insertCell(5);
+    statusCell.innerText = app.status;
+    statusCell.className = `status-${app.status}`;
+    
+    const messageCell = row.insertCell(6);
+    messageCell.innerText = app.status_message;
+    messageCell.className = `status-message ${app.status.toLowerCase()}`;
+    
+    // Fetch extra details (skills, stipend)
+    loadApplicationDetails(app.internship_id, row);
+  });
+}
+
+// Fetch extra internship details
+async function loadApplicationDetails(internshipId, row) {
+  try {
+    const response = await fetch(`/api/internship/details/${internshipId}`);
+    const data = await response.json();
+    if (data.success) {
+      row.cells[2].innerText = data.details.skills_required;
+      row.cells[3].innerText = data.details.stipend;
+    } else {
+      row.cells[2].innerText = 'N/A';
+      row.cells[3].innerText = 'N/A';
+    }
+  } catch (err) {
+    console.error('Error loading details:', err);
+    row.cells[2].innerText = 'Error';
+    row.cells[3].innerText = 'Error';
+  }
+}
+
+// Show status change alerts
+function showStatusAlerts(applications) {
+  const recentlySelected = applications.filter(app => app.status === 'Selected');
+  const recentlyRejected = applications.filter(app => app.status === 'Rejected');
+  
+  if (recentlySelected.length > 0) {
+    const msg = recentlySelected.length === 1 
+      ? `🎉 Congratulations! You have been selected for the ${recentlySelected[0].internship_title} internship at ${recentlySelected[0].company_name}!`
+      : `🎉 Congratulations! You have been selected for ${recentlySelected.length} internships!`;
+    showAlert(msg, 'success');
+  }
+  
+  if (recentlyRejected.length > 0) {
+    const msg = recentlyRejected.length === 1
+      ? `❌ Your application for ${recentlyRejected[0].internship_title} at ${recentlyRejected[0].company_name} was not selected. Keep trying!`
+      : `❌ ${recentlyRejected.length} of your applications were not selected. Don't give up!`;
+    showAlert(msg, 'info');
+  }
+}
+
+// Custom alert box
+function showAlert(message, type) {
+  const alertDiv = document.createElement('div');
+  alertDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    max-width: 400px;
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    ${type === 'success' ? 'background: #28a745;' : type === 'info' ? 'background: #17a2b8;' : 'background: #dc3545;'}
+  `;
+  alertDiv.textContent = message;
+  
+  document.body.appendChild(alertDiv);
+  
+  setTimeout(() => {
+    if (alertDiv.parentNode) {
+      alertDiv.remove();
+    }
+  }, 5000);
+  
+  alertDiv.addEventListener('click', () => {
+    if (alertDiv.parentNode) {
+      alertDiv.remove();
+    }
+  });
+}
+
+// Show error message
+function showError(message) {
+  document.getElementById('loadingMessage').style.display = 'none';
+  const errorDiv = document.getElementById('errorMessage');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+}
+
+// Initialize
+if (checkAuth()) {
+  loadApplications();
+}
+</script>
+
+</body>
+</html>
